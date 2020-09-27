@@ -2317,15 +2317,18 @@ mt7915_mcu_add_group(struct mt7915_dev *dev, struct ieee80211_vif *vif,
 int mt7915_mcu_add_sta_adv(struct mt7915_dev *dev, struct ieee80211_vif *vif,
 			   struct ieee80211_sta *sta, bool enable)
 {
+	struct mt7915_vif *mvif = (struct mt7915_vif *)vif->drv_priv;
 	int ret;
 
 	if (!sta)
 		return 0;
 
 	/* must keep the order */
-	ret = mt7915_mcu_add_group(dev, vif, sta);
-	if (ret)
-		return ret;
+	if (mvif->idx < 16) { /* firmware workaround */
+		ret = mt7915_mcu_add_group(dev, vif, sta);
+		if (ret)
+			return ret;
+	}
 
 	ret = mt7915_mcu_add_txbf(dev, vif, sta, enable);
 	if (ret)
